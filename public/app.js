@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // State
   let items = [];
 
-  // Default Webhook URL provided by user
-  const DEFAULT_WEBHOOK = "https://script.google.com/macros/s/AKfycby9evU_ZpfOwAgzn2YZiwtQGA3vPg12EHDZTLy0CghB7qGzQjaC3VtOmbHFe5HxB1My/exec";
+  // Default Webhook URL Versi 2 provided by user
+  const DEFAULT_WEBHOOK = "https://script.google.com/macros/s/AKfycbw5pgyU-nPLEqFUij7XQTktJr148bxzTuUxvNCAflt-F5wX4192gyf1z_U2ONyO3V6M/exec";
 
   // DOM Elements
   const tabBtns = document.querySelectorAll('.tab-btn');
@@ -35,13 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const toastNotification = document.getElementById('toastNotification');
 
   // Load Saved Webhook URL or set Default
-  const savedWebhook = localStorage.getItem('googleSheetWebhookUrl');
-  if (savedWebhook) {
-    webhookUrlInput.value = savedWebhook;
-  } else {
-    webhookUrlInput.value = DEFAULT_WEBHOOK;
-    localStorage.setItem('googleSheetWebhookUrl', DEFAULT_WEBHOOK);
-  }
+  webhookUrlInput.value = DEFAULT_WEBHOOK;
+  localStorage.setItem('googleSheetWebhookUrl', DEFAULT_WEBHOOK);
 
   saveWebhookBtn.addEventListener('click', () => {
     const val = webhookUrlInput.value.trim();
