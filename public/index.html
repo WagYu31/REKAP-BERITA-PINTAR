@@ -17,18 +17,18 @@
         <div class="brand-icon">📰</div>
         <div>
           <h1>Rekap Berita Pintar</h1>
-          <p>Tempel link berita &rarr; Judul, Tanggal & Bulan terisi otomatis &rarr; Download Excel (.xlsx)</p>
+          <p>Tempel link berita &rarr; Judul, Tanggal & Bulan terisi otomatis &rarr; Sync Google Sheets & Export Excel</p>
         </div>
       </div>
       <div class="header-badge">
-        <span class="status-dot"></span> Status: Off-line & Safe (Lokal)
+        <span class="status-dot"></span> Status: Ready & Online
       </div>
     </header>
 
     <!-- Settings Bar -->
     <section class="card settings-card">
       <div class="card-title">
-        <span>⚙️ Header Laporan Excel</span>
+        <span>⚙️ Header Laporan & Integration</span>
       </div>
       <div class="settings-grid">
         <div class="form-group">
@@ -38,6 +38,18 @@
         <div class="form-group">
           <label for="periodInput">Periode Bulan & Tahun</label>
           <input type="text" id="periodInput" value="MEI - JULI 2026" placeholder="Contoh: MEI - JULI 2026">
+        </div>
+      </div>
+
+      <!-- Google Sheets Webhook Card -->
+      <div class="sheets-integration-box" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--card-border);">
+        <div class="form-group">
+          <label for="webhookUrlInput" style="color: #34d399; font-weight: 700;">🟢 URL Webhook Google Spreadsheet (Auto Sync)</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="webhookUrlInput" placeholder="Tempel Webhook Google Apps Script di sini (https://script.google.com/macros/s/.../exec)" style="flex: 1;">
+            <button id="saveWebhookBtn" class="btn btn-secondary" style="white-space: nowrap;">💾 Simpan URL</button>
+          </div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Sekali simpan, data rekap akan otomatis terkirim langsung ke Google Spreadsheet Anda!</span>
         </div>
       </div>
     </section>
@@ -90,8 +102,11 @@
           <span class="count-badge" id="totalCountBadge">0 Berita</span>
         </div>
         <div class="table-actions">
+          <button id="syncSheetsBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <span>🟢</span> Sync ke Google Sheets
+          </button>
           <button id="addManualBtn" class="btn btn-secondary">
-            <span>➕</span> Tambah Baris Manual
+            <span>➕</span> Tambah Manual
           </button>
           <button id="copyClipboardBtn" class="btn btn-secondary">
             <span>📋</span> Salin untuk Excel
@@ -136,7 +151,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-      <p>Rekap Berita Pintar &bull; Otomatisasi Media & Rekapitulasi Berita Online</p>
+      <p>Rekap Berita Pintar &bull; Otomatisasi Media & Rekapitulasi Berita Online &bull; Direct Google Sheets Sync Enabled</p>
     </footer>
   </div>
 

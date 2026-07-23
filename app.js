@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const mediaNameInput = document.getElementById('mediaNameInput');
   const periodInput = document.getElementById('periodInput');
 
+  const webhookUrlInput = document.getElementById('webhookUrlInput');
+  const saveWebhookBtn = document.getElementById('saveWebhookBtn');
+  const syncSheetsBtn = document.getElementById('syncSheetsBtn');
+
   const progressContainer = document.getElementById('progressContainer');
   const progressText = document.getElementById('progressText');
   const progressPercent = document.getElementById('progressPercent');
@@ -26,6 +30,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportExcelBtn = document.getElementById('exportExcelBtn');
   const clearAllBtn = document.getElementById('clearAllBtn');
   const toastNotification = document.getElementById('toastNotification');
+
+  // Load Saved Webhook URL
+  const savedWebhook = localStorage.getItem('googleSheetWebhookUrl');
+  if (savedWebhook) {
+    webhookUrlInput.value = savedWebhook;
+  }
+
+  saveWebhookBtn.addEventListener('click', () => {
+    const val = webhookUrlInput.value.trim();
+    if (val) {
+      localStorage.setItem('googleSheetWebhookUrl', val);
+      showToast('URL Google Sheets Webhook berhasil disimpan! 💾', 'success');
+    } else {
+      localStorage.removeItem('googleSheetWebhookUrl');
+      showToast('Webhook dihapus.', 'info');
+    }
+  });
 
   // Tab Switcher
   tabBtns.forEach(btn => {
@@ -84,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
       tableBody.appendChild(tr);
     });
 
-    // Attach Event Listeners to Inputs & Buttons
     tableBody.querySelectorAll('input').forEach(input => {
       input.addEventListener('change', (e) => {
         const idx = parseInt(e.target.getAttribute('data-index'));
@@ -138,6 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderTable();
         showToast(`Berhasil mengekstrak ${json.data.length} link berita!`, 'success');
+
+        // Auto Sync if webhook is set
+        const webhookUrl = webhookUrlInput.value.trim();
+        if (webhookUrl) {
+          syncToGoogleSheets(webhookUrl, true);
+        }
       }
     } catch (err) {
       showToast('Gagal mengambil data berita: ' + err.message, 'danger');
@@ -150,6 +176,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 2000);
     }
   }
+
+  // Sync to Google Sheets Function
+  async function syncToGoogleSheets(webhookUrl, isAuto = false) {
+    if (!webhookUrl) {
+      showToast('Harap isi & simpan URL Webhook Google Spreadsheet terlebih dahulu!', 'warning');
+      return;
+    }
+    if (items.length === 0) {
+      showToast('Tabel masih kosong! Tambahkan link berita dulu.', 'warning');
+      return;
+    }
+
+    const payload = {
+      mediaName: mediaNameInput.value.trim() || 'MEDIAKOMUNIKASI.ID',
+      period: periodInput.value.trim() || 'MEI - JULI 2026',
+      items: items
+    };
+
+    try {
+      showToast(isAuto ? 'Auto Sync ke Google Spreadsheet...' : 'Mengirim data ke Google Spreadsheet...', 'info');
+      
+      // Native fetch with no-cors or JSON post to Apps Script Webhook
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        mode: 'no-cors'
+      });
+
+      showToast('✅ Data berhasil dikirim ke Google Spreadsheet Anda! 🚀', 'success');
+    } catch (err) {
+      showToast('Gagal sync ke Google Sheets: ' + err.message, 'danger');
+    }
+  }
+
+  syncSheetsBtn.addEventListener('click', () => {
+    const webhookUrl = webhookUrlInput.value.trim();
+    syncToGoogleSheets(webhookUrl, false);
+  });
 
   // Add Single URL
   addSingleBtn.addEventListener('click', () => {
