@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Serve static files from 'public' directory
+// Serve static files from root and public
+app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Bulan Bahasa Indonesia
@@ -50,11 +51,8 @@ function parseDateAndMonth(dateString, rawHtml = '', url = '') {
     }
   }
 
-  // Regex fallback
   if (!foundValidDate) {
     const combinedText = `${rawHtml} ${url}`;
-    
-    // Pattern: 15/5/2026, 15-05-2026, 2026/05/15
     const numericMatch = combinedText.match(/\b(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{2,4})\b/) ||
                          combinedText.match(/\b(\d{4})[\/\.-](\d{1,2})[\/\.-](\d{1,2})\b/);
     if (numericMatch) {
@@ -75,14 +73,12 @@ function parseDateAndMonth(dateString, rawHtml = '', url = '') {
       }
     }
 
-    // Pattern: 15 Mei 2026 / 15 May 2026
     if (!foundValidDate) {
       const textMatch = combinedText.match(/\b(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\b/);
       if (textMatch) {
         const day = parseInt(textMatch[1]);
         const monthStr = textMatch[2].toLowerCase();
         const year = parseInt(textMatch[3]);
-        
         if (BULAN_MAP[monthStr]) {
           monthName = BULAN_MAP[monthStr];
           const monthIdx = BULAN_INDONESIA.indexOf(monthName);
@@ -97,13 +93,11 @@ function parseDateAndMonth(dateString, rawHtml = '', url = '') {
     const day = parsedDate.getDate();
     const month = parsedDate.getMonth() + 1;
     const year = parsedDate.getFullYear();
-    
     dateFormatted = `${day}/${month}/${year}`;
     if (!monthName) {
       monthName = BULAN_INDONESIA[parsedDate.getMonth()] || 'MEI';
     }
   } else {
-    // Fallback: Current Date
     const today = new Date();
     dateFormatted = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
     monthName = BULAN_INDONESIA[today.getMonth()];
@@ -112,13 +106,11 @@ function parseDateAndMonth(dateString, rawHtml = '', url = '') {
   return { dateFormatted, monthName };
 }
 
-// Helper getter
 function getMetaContent(root, selector) {
   const el = root.querySelector(selector);
   return el ? el.getAttribute('content') : null;
 }
 
-// Scrape Function for Single URL
 async function scrapeUrlMetadata(urlStr) {
   let targetUrl = urlStr.trim();
   if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
@@ -138,7 +130,6 @@ async function scrapeUrlMetadata(urlStr) {
     const html = response.data;
     const root = parse(html);
 
-    // 1. Ekstraksi Judul
     let title = getMetaContent(root, 'meta[property="og:title"]') ||
                 getMetaContent(root, 'meta[name="twitter:title"]') ||
                 getMetaContent(root, 'meta[name="title"]') ||
@@ -150,7 +141,6 @@ async function scrapeUrlMetadata(urlStr) {
       .replace(/\s+/g, ' ')
       .replace(/\s*[\-\|]\s*(MediaKomunikasi|Kompas|Detik|Antara|Liputan6|Tribun|Cnn|Tempo).*$/i, '');
 
-    // 2. Ekstraksi Tanggal Publish
     let rawDate = getMetaContent(root, 'meta[property="article:published_time"]') ||
                   getMetaContent(root, 'meta[name="pubdate"]') ||
                   getMetaContent(root, 'meta[name="publishdate"]') ||
@@ -159,7 +149,6 @@ async function scrapeUrlMetadata(urlStr) {
                   root.querySelector('time')?.textContent ||
                   '';
 
-    // JSON-LD Check
     if (!rawDate) {
       const scripts = root.querySelectorAll('script[type="application/ld+json"]');
       scripts.forEach(script => {
@@ -244,17 +233,14 @@ app.post('/api/export-excel', async (req, res) => {
     right: { style: 'thin' }
   };
 
-  // Row 1: Lampiran 1.
   const row1 = worksheet.getRow(1);
   row1.getCell(1).value = 'Lampiran 1.';
   row1.getCell(1).font = headerTitleFont;
 
-  // Row 2: Rangkuman Berita Online
   const row2 = worksheet.getRow(2);
   row2.getCell(1).value = `Rangkuman Berita Online ${mediaName.toUpperCase()} bulan ${period.toUpperCase()}`;
   row2.getCell(1).font = redTitleFont;
 
-  // Row 4: Table Headers
   const headers = ['NO', 'BULAN', 'JUDUL BERITA', 'TANGGAL PUBLISH', 'ALAMAT URL'];
   const headerRow = worksheet.getRow(4);
 
@@ -266,11 +252,11 @@ app.post('/api/export-excel', async (req, res) => {
     cell.border = thinBorder;
   });
 
-  worksheet.getColumn(1).width = 6;   // NO
-  worksheet.getColumn(2).width = 12;  // BULAN
-  worksheet.getColumn(3).width = 65;  // JUDUL BERITA
-  worksheet.getColumn(4).width = 20;  // TANGGAL PUBLISH
-  worksheet.getColumn(5).width = 75;  // ALAMAT URL
+  worksheet.getColumn(1).width = 6;
+  worksheet.getColumn(2).width = 12;
+  worksheet.getColumn(3).width = 65;
+  worksheet.getColumn(4).width = 20;
+  worksheet.getColumn(5).width = 75;
 
   items.forEach((item, index) => {
     const rowNumber = 5 + index;
@@ -315,9 +301,9 @@ app.post('/api/export-excel', async (req, res) => {
   res.end();
 });
 
-// Fallback HTML route for SPA / root path
+// Fallback HTML route
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 if (require.main === module) {
