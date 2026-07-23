@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Berita Pintar - Otomatisasi Extract Link & Export Excel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">📰</div>
+        <div>
+          <h1>Rekap Berita Pintar</h1>
+          <p>Tempel link berita &rarr; Judul, Tanggal & Bulan terisi otomatis &rarr; Download Excel (.xlsx)</p>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span class="status-dot"></span> Status: Off-line & Safe (Lokal)
+      </div>
+    </header>
+
+    <!-- Settings Bar -->
+    <section class="card settings-card">
+      <div class="card-title">
+        <span>⚙️ Header Laporan Excel</span>
+      </div>
+      <div class="settings-grid">
+        <div class="form-group">
+          <label for="mediaNameInput">Nama Media / Portal</label>
+          <input type="text" id="mediaNameInput" value="MEDIAKOMUNIKASI.ID" placeholder="Contoh: MEDIAKOMUNIKASI.ID">
+        </div>
+        <div class="form-group">
+          <label for="periodInput">Periode Bulan & Tahun</label>
+          <input type="text" id="periodInput" value="MEI - JULI 2026" placeholder="Contoh: MEI - JULI 2026">
+        </div>
+      </div>
+    </section>
+
+    <!-- Link Input Card -->
+    <section class="card input-card">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="single">⚡ 1 Link Cepat</button>
+        <button class="tab-btn" data-tab="batch">📦 Paste Banyak Link (Batch)</button>
+      </div>
+
+      <!-- Single Link Tab -->
+      <div id="singleTab" class="tab-content active">
+        <div class="single-input-row">
+          <input type="text" id="singleUrlInput" placeholder="Tempel URL/Link berita di sini (misal: https://mediakomunikasi.id/bimtek-dprd...)" autocomplete="off">
+          <button id="addSingleBtn" class="btn btn-primary">
+            <span class="btn-icon">⚡</span> Ekstrak & Tambah
+          </button>
+        </div>
+      </div>
+
+      <!-- Batch Link Tab -->
+      <div id="batchTab" class="tab-content">
+        <p class="input-hint">Tempel banyak link sekaligus (satu link per baris):</p>
+        <textarea id="batchUrlInput" rows="5" placeholder="https://mediakomunikasi.id/berita-1&#10;https://mediakomunikasi.id/berita-2&#10;https://mediakomunikasi.id/berita-3"></textarea>
+        <div class="batch-actions">
+          <button id="processBatchBtn" class="btn btn-primary">
+            <span class="btn-icon">🚀</span> Proses Semua Link Sekaligus
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container hidden">
+        <div class="progress-info">
+          <span id="progressText">Memproses link 0 / 0...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div id="progressBarFill" class="progress-fill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table Section -->
+    <section class="card table-card">
+      <div class="table-header-bar">
+        <div class="table-title">
+          <h2>📊 Preview Tabel Rekap</h2>
+          <span class="count-badge" id="totalCountBadge">0 Berita</span>
+        </div>
+        <div class="table-actions">
+          <button id="addManualBtn" class="btn btn-secondary">
+            <span>➕</span> Tambah Baris Manual
+          </button>
+          <button id="copyClipboardBtn" class="btn btn-secondary">
+            <span>📋</span> Salin untuk Excel
+          </button>
+          <button id="exportExcelBtn" class="btn btn-success">
+            <span>📥</span> Download Excel (.xlsx)
+          </button>
+          <button id="clearAllBtn" class="btn btn-danger-outline">
+            <span>🗑️</span> Hapus Semua
+          </button>
+        </div>
+      </div>
+
+      <!-- Toast Notification -->
+      <div id="toastNotification" class="toast hidden"></div>
+
+      <!-- Main Data Table -->
+      <div class="table-wrapper">
+        <table id="rekapTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">NO</th>
+              <th style="width: 120px;">BULAN</th>
+              <th>JUDUL BERITA</th>
+              <th style="width: 150px;">TANGGAL PUBLISH</th>
+              <th style="width: 320px;">ALAMAT URL</th>
+              <th style="width: 70px;">AKSI</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Rows injected dynamically -->
+          </tbody>
+        </table>
+
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">📌</div>
+          <h3>Belum ada link berita yang dimasukkan</h3>
+          <p>Tempel link berita di kolom input di atas untuk mulai menyusun rekap secara otomatis.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Rekap Berita Pintar &bull; Otomatisasi Media & Rekapitulasi Berita Online</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
