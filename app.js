@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const payload = {
+      webhookUrl: targetUrl,
       mediaName: mediaNameInput.value.trim() || 'MEDIAKOMUNIKASI.ID',
       period: periodInput.value.trim() || 'MEI - JULI 2026',
       items: items
@@ -196,14 +197,18 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       showToast(isAuto ? 'Auto Sync ke Google Spreadsheet...' : 'Mengirim data ke Google Spreadsheet...', 'info');
       
-      await fetch(targetUrl, {
+      const response = await fetch('/api/sync-sheets', {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        mode: 'no-cors'
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
 
-      showToast('✅ Data berhasil dikirim ke Google Spreadsheet Anda! 🚀', 'success');
+      const resJson = await response.json();
+      if (response.ok) {
+        showToast('✅ Data berhasil dikirim ke Google Spreadsheet Anda! 🚀', 'success');
+      } else {
+        showToast('Gagal: ' + (resJson.error || 'Gagal mengirim data'), 'danger');
+      }
     } catch (err) {
       showToast('Gagal sync ke Google Sheets: ' + err.message, 'danger');
     }
