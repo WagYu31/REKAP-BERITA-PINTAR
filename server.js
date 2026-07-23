@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Serve static files from 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Bulan Bahasa Indonesia
@@ -311,6 +313,11 @@ app.post('/api/export-excel', async (req, res) => {
 
   await workbook.xlsx.write(res);
   res.end();
+});
+
+// Fallback HTML route for SPA / root path
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 if (require.main === module) {
