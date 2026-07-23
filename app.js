@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // State
   let items = [];
 
-  // Default Webhook URL Versi 2 provided by user
-  const DEFAULT_WEBHOOK = "https://script.google.com/macros/s/AKfycbw5pgyU-nPLEqFUij7XQTktJr148bxzTuUxvNCAflt-F5wX4192gyf1z_U2ONyO3V6M/exec";
+  // Default Webhook URL (Container-bound inside user's Google Sheet)
+  const DEFAULT_WEBHOOK = "https://script.google.com/macros/s/AKfycbwDkh131eoPAyv8hqysOB1pbxD6wA8tAo-OkCe0uzwG25QcWXjDkq5iKKbanMtcSi8e/exec";
 
   // DOM Elements
   const tabBtns = document.querySelectorAll('.tab-btn');
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearAllBtn = document.getElementById('clearAllBtn');
   const toastNotification = document.getElementById('toastNotification');
 
-  // Load Saved Webhook URL or set Default
+  // Set & Save Webhook URL
   webhookUrlInput.value = DEFAULT_WEBHOOK;
   localStorage.setItem('googleSheetWebhookUrl', DEFAULT_WEBHOOK);
 
