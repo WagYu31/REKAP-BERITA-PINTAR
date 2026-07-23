@@ -1,6 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
   // State
   let items = [];
+  let isExtracting = false;
+
+  // Helper: disable/enable extract buttons during processing
+  function setExtractButtonsState(disabled) {
+    const btns = [document.getElementById('addSingleBtn'), document.getElementById('processBatchBtn')];
+    btns.forEach(btn => {
+      if (!btn) return;
+      btn.disabled = disabled;
+      btn.style.opacity = disabled ? '0.5' : '1';
+      btn.style.pointerEvents = disabled ? 'none' : 'auto';
+    });
+  }
 
   // Default Webhook URL (Container-bound inside user's Google Sheet)
   const DEFAULT_WEBHOOK = "https://script.google.com/macros/s/AKfycbwDkh131eoPAyv8hqysOB1pbxD6wA8tAo-OkCe0uzwG25QcWXjDkq5iKKbanMtcSi8e/exec";
@@ -133,9 +145,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch Metadata Single/Batch
   async function extractUrls(urlList) {
     if (urlList.length === 0) return;
+    if (isExtracting) return; // prevent double-click
+
+    // Filter out duplicate URLs already in the table
+    const existingUrls = new Set(items.map(i => i.url.replace(/\/$/, '').toLowerCase()));
+    const newUrls = urlList.filter(u => !existingUrls.has(u.replace(/\/$/, '').toLowerCase()));
+    const skippedCount = urlList.length - newUrls.length;
+
+    if (skippedCount > 0 && newUrls.length === 0) {
+      showToast(`⚠️ ${skippedCount} link sudah ada di tabel, tidak ditambahkan lagi.`, 'warning');
+      return;
+    }
+    if (skippedCount > 0) {
+      showToast(`⚠️ ${skippedCount} link duplikat dilewati.`, 'warning');
+    }
+
+    isExtracting = true;
+    setExtractButtonsState(true);
 
     progressContainer.classList.remove('hidden');
-    progressText.textContent = `Memproses 1 dari ${urlList.length} link...`;
+    progressText.textContent = `Memproses 1 dari ${newUrls.length} link...`;
     progressPercent.textContent = `0%`;
     progressBarFill.style.width = `0%`;
 
@@ -143,35 +172,46 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/api/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls: urlList })
+        body: JSON.stringify({ urls: newUrls })
       });
 
       const json = await response.json();
       if (json.data && Array.isArray(json.data)) {
+        let addedCount = 0;
         json.data.forEach(res => {
-          items.push({
-            bulan: res.bulan || 'MEI',
-            title: res.title || 'Judul Berita',
-            tanggal: res.tanggal || '',
-            url: res.url
-          });
+          // Double-check duplicate after server response
+          const normalizedUrl = (res.url || '').replace(/\/$/, '').toLowerCase();
+          const alreadyExists = items.some(i => i.url.replace(/\/$/, '').toLowerCase() === normalizedUrl);
+          if (!alreadyExists) {
+            items.push({
+              bulan: res.bulan || 'MEI',
+              title: res.title || 'Judul Berita',
+              tanggal: res.tanggal || '',
+              url: res.url
+            });
+            addedCount++;
+          }
         });
 
         renderTable();
-        showToast(`Berhasil mengekstrak ${json.data.length} link berita!`, 'success');
+        if (addedCount > 0) {
+          showToast(`✅ Berhasil menambahkan ${addedCount} link berita!`, 'success');
 
-        // Auto Sync if webhook is set
-        const webhookUrl = webhookUrlInput.value.trim() || DEFAULT_WEBHOOK;
-        if (webhookUrl) {
-          syncToGoogleSheets(webhookUrl, true);
+          // Auto Sync if webhook is set
+          const webhookUrl = webhookUrlInput.value.trim() || DEFAULT_WEBHOOK;
+          if (webhookUrl) {
+            syncToGoogleSheets(webhookUrl, true);
+          }
         }
       }
     } catch (err) {
       showToast('Gagal mengambil data berita: ' + err.message, 'danger');
     } finally {
+      isExtracting = false;
+      setExtractButtonsState(false);
       progressBarFill.style.width = `100%`;
       progressPercent.textContent = `100%`;
-      progressText.textContent = `Selesai memproses ${urlList.length} link.`;
+      progressText.textContent = `Selesai memproses ${newUrls.length} link.`;
       setTimeout(() => {
         progressContainer.classList.add('hidden');
       }, 2000);
