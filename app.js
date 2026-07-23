@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // State
   let items = [];
 
+  // Default Webhook URL provided by user
+  const DEFAULT_WEBHOOK = "https://script.google.com/macros/s/AKfycby9evU_ZpfOwAgzn2YZiwtQGA3vPg12EHDZTLy0CghB7qGzQjaC3VtOmbHFe5HxB1My/exec";
+
   // DOM Elements
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
@@ -31,10 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearAllBtn = document.getElementById('clearAllBtn');
   const toastNotification = document.getElementById('toastNotification');
 
-  // Load Saved Webhook URL
+  // Load Saved Webhook URL or set Default
   const savedWebhook = localStorage.getItem('googleSheetWebhookUrl');
   if (savedWebhook) {
     webhookUrlInput.value = savedWebhook;
+  } else {
+    webhookUrlInput.value = DEFAULT_WEBHOOK;
+    localStorage.setItem('googleSheetWebhookUrl', DEFAULT_WEBHOOK);
   }
 
   saveWebhookBtn.addEventListener('click', () => {
@@ -160,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`Berhasil mengekstrak ${json.data.length} link berita!`, 'success');
 
         // Auto Sync if webhook is set
-        const webhookUrl = webhookUrlInput.value.trim();
+        const webhookUrl = webhookUrlInput.value.trim() || DEFAULT_WEBHOOK;
         if (webhookUrl) {
           syncToGoogleSheets(webhookUrl, true);
         }
@@ -179,10 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Sync to Google Sheets Function
   async function syncToGoogleSheets(webhookUrl, isAuto = false) {
-    if (!webhookUrl) {
-      showToast('Harap isi & simpan URL Webhook Google Spreadsheet terlebih dahulu!', 'warning');
-      return;
-    }
+    const targetUrl = webhookUrl || webhookUrlInput.value.trim() || DEFAULT_WEBHOOK;
+
     if (items.length === 0) {
       showToast('Tabel masih kosong! Tambahkan link berita dulu.', 'warning');
       return;
@@ -197,8 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       showToast(isAuto ? 'Auto Sync ke Google Spreadsheet...' : 'Mengirim data ke Google Spreadsheet...', 'info');
       
-      // Native fetch with no-cors or JSON post to Apps Script Webhook
-      await fetch(webhookUrl, {
+      await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload),
@@ -212,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   syncSheetsBtn.addEventListener('click', () => {
-    const webhookUrl = webhookUrlInput.value.trim();
+    const webhookUrl = webhookUrlInput.value.trim() || DEFAULT_WEBHOOK;
     syncToGoogleSheets(webhookUrl, false);
   });
 
